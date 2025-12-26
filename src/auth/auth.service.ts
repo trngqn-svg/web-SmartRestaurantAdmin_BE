@@ -50,7 +50,7 @@ export class AuthService {
 
     return {
       accessToken,
-      refreshToken, // controller sẽ set cookie
+      refreshToken,
     };
   }
 
@@ -90,8 +90,11 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
+      const admin = await this.adminsService.findById(payload.sub);
+      if (!admin) throw new UnauthorizedException('Unauthoried')
+
       const accessToken = this.jwtService.sign(
-        { sub: payload.sub },
+        { sub: payload.sub, role: admin.role },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
           expiresIn: this.configService.get('ACCESS_TOKEN_EXPIRE'),

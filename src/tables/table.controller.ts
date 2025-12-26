@@ -9,13 +9,19 @@ import {
   Query,
   Res,
   StreamableFile,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { TablesService } from './tables.service';
 import { CreateTableDto } from './dto/create-table.dto';
 import { UpdateTableDto } from './dto/update-table.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 @Controller('api/admin/tables')
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
