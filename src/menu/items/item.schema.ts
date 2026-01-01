@@ -38,6 +38,18 @@ export class MenuItem {
 
   @Prop({ type: [Types.ObjectId], ref: 'ModifierGroup', default: [] })
   modifierGroupIds: Types.ObjectId[];
+
+  @Prop({ default: 0, min: 0, max: 5 })
+  ratingAvg: number;
+
+  @Prop({ default: 0, min: 0 })
+  ratingCount: number;
+
+  @Prop({
+    type: Object,
+    default: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  })
+  ratingBreakdown: Record<'1'|'2'|'3'|'4'|'5', number>;
 }
 
 export const MenuItemSchema = SchemaFactory.createForClass(MenuItem);
@@ -48,3 +60,5 @@ MenuItemSchema.index({ restaurantId: 1, createdAt: -1 });
 MenuItemSchema.index({ restaurantId: 1, priceCents: 1 });
 MenuItemSchema.index({ restaurantId: 1, popularityCount: -1 });
 MenuItemSchema.index({ restaurantId: 1, name: 1 });
+MenuItemSchema.index({ restaurantId: 1, ratingAvg: -1 });
+MenuItemSchema.index({ restaurantId: 1, ratingCount: -1 });

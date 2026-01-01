@@ -5,6 +5,7 @@ import { MenuItem, MenuItemSchema } from './items/item.schema';
 import { MenuItemPhoto, MenuItemPhotoSchema } from './photos/photo.schema';
 import { ModifierGroup, ModifierGroupSchema } from './modifiers/modifier-group.schema';
 import { ModifierOption, ModifierOptionSchema } from './modifiers/modifier-option.schema';
+import { ItemReview, ItemReviewSchema } from './review/item-review.schema';
 
 import { CategoriesController } from './categories/categories.controller';
 import { CategoriesService } from './categories/categories.service';
@@ -22,6 +23,9 @@ import { ModifiersService } from './modifiers/modifiers.service';
 import { GuestMenuController } from './guest/guest.controller';
 import { GuestMenuService } from './guest/guest.service';
 
+import { ItemReviewsService } from './review/item-review.service';
+import { ItemReviewsController } from './review/item-review.controller';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -30,6 +34,7 @@ import { GuestMenuService } from './guest/guest.service';
       { name: MenuItemPhoto.name, schema: MenuItemPhotoSchema },
       { name: ModifierGroup.name, schema: ModifierGroupSchema },
       { name: ModifierOption.name, schema: ModifierOptionSchema },
+      { name: ItemReview.name, schema: ItemReviewSchema },
     ]),
   ],
   controllers: [
@@ -38,6 +43,7 @@ import { GuestMenuService } from './guest/guest.service';
     PhotosController,
     ModifiersController,
     GuestMenuController,
+    ItemReviewsController,
   ],
   providers: [
     CategoriesService,
@@ -46,6 +52,7 @@ import { GuestMenuService } from './guest/guest.service';
     StorageService,
     ModifiersService,
     GuestMenuService,
+    ItemReviewsService,
   ],
 })
 export class MenuModule {}

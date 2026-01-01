@@ -33,7 +33,7 @@ export class GuestMenuService {
     if (q.q) itemFilter.name = { $regex: String(q.q), $options: 'i' };
     if (q.categoryId) itemFilter.categoryId = new Types.ObjectId(String(q.categoryId));
     if (q.chefRecommended === 'true') itemFilter.isChefRecommended = true;
-    itemFilter.status = 'available';
+    itemFilter.status = { $in: ['available', 'sold_out'] };
 
     const sort: any =
       q.sort === 'popularity' ? { popularityCount: -1 } :
@@ -70,6 +70,7 @@ export class GuestMenuService {
       const canOrder = i.status === 'available';
       return {
         id: String(i._id),
+        categoryId: String(i.categoryId),
         name: i.name,
         description: i.description,
         price: i.priceCents / 100,
@@ -78,6 +79,8 @@ export class GuestMenuService {
         isChefRecommended: i.isChefRecommended,
         primaryPhotoUrl: photoMap.get(String(i._id)) ?? null,
         modifierGroups: mods,
+        ratingAvg: (i as any).ratingAvg ?? 0,
+        ratingCount: (i as any).ratingCount ?? 0,
       };
     });
 
