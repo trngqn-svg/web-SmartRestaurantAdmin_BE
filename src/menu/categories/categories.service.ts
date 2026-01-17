@@ -61,7 +61,7 @@ export class CategoriesService {
       filter.status = status;
     }
 
-    // Sort (FIXED typings)
+    // Sort
     const dir: SortOrder = sortDir === "desc" ? -1 : 1;
 
     const sort: Record<string, SortOrder> =
@@ -104,7 +104,7 @@ export class CategoriesService {
       counts.map((x) => [String(x._id), x.count]),
     );
 
-    // Response (paginated)
+    // Response
     return {
       items: categories.map((c) => ({
         ...c,

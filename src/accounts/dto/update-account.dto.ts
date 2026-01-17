@@ -16,5 +16,5 @@ export class UpdateAccountDto {
 
   @IsOptional()
   @IsIn(STATUSES as unknown as string[])
-  status?: string; // ACTIVE | DISABLED
+  status?: string;
 }

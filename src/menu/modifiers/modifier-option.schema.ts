@@ -25,4 +25,4 @@ export class ModifierOption {
 export const ModifierOptionSchema = SchemaFactory.createForClass(ModifierOption);
 
 ModifierOptionSchema.index({ groupId: 1, name: 1 }, { unique: true });
-ModifierOptionSchema.index({ groupId: 1, displayOrder: 1 }); // ✅ NEW
+ModifierOptionSchema.index({ groupId: 1, displayOrder: 1 });

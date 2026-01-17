@@ -1,14 +1,4 @@
-import {
-  IsBoolean,
-  IsIn,
-  IsInt,
-  IsMongoId,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Length,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsMongoId, IsNumber, IsOptional, IsString, Length, Min } from 'class-validator';
 
 export class CreateModifierGroupDto {
   @IsString()

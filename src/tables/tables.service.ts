@@ -46,7 +46,7 @@ export class TablesService {
       expiresIn: '30d',
     });
 
-    const restaurantDomain = process.env.RES_DOMAIN;
+    const restaurantDomain = process.env.VITE_APP_URL;
 
     const qrUrl = `${restaurantDomain}/menu?table=${table._id}&token=${token}`;
 
@@ -110,7 +110,7 @@ export class TablesService {
       throw new NotFoundException('QR code not generated yet');
     }
     
-    const restaurantDomain = process.env.RES_DOMAIN;
+    const restaurantDomain = process.env.VITE_APP_URL;
     const qrUrl = `${restaurantDomain}/menu?table=${table._id}&token=${table.qrToken}`;
 
     const qrOptions = {
@@ -145,7 +145,7 @@ export class TablesService {
       expiresIn: '30d',
     });
 
-    const restaurantDomain = process.env.RES_DOMAIN;
+    const restaurantDomain = process.env.VITE_APP_URL;
     const qrUrl = `${restaurantDomain}/menu?table=${table._id}&token=${token}`;
 
     const qrOptions = {
@@ -181,7 +181,7 @@ export class TablesService {
       );
     }
 
-    const restaurantDomain = process.env.RES_DOMAIN;
+    const restaurantDomain = process.env.VITE_APP_URL;
     const qrUrl = `${restaurantDomain}/menu?table=${table._id}&token=${table.qrToken}`;
 
     if (format === 'png') {
@@ -278,7 +278,7 @@ export class TablesService {
       const jobs = tables.map(async (t) => {
         if (!t.qrToken) return;
 
-        const restaurantDomain = process.env.RES_DOMAIN;
+        const restaurantDomain = process.env.VITE_APP_URL;
         const qrUrl = `${restaurantDomain}/menu?table=${t._id}&token=${t.qrToken}`;
 
         const qrOptions = {

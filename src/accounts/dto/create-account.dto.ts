@@ -9,5 +9,5 @@ export class CreateAccountDto {
   password: string;
 
   @IsIn(ROLES as unknown as string[])
-  role: string; // 'ADMIN' | 'WAITER' | 'KDS'
+  role: string;
 }
