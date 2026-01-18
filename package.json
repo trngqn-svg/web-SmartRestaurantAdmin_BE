@@ -35,6 +35,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
+    "fast-csv": "^5.0.5",
+    "luxon": "^3.7.2",
     "mongoose": "^9.0.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -86,5 +88,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "diff": "^8.0.3"
   }
 }
