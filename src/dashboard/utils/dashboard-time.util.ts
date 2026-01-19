@@ -9,6 +9,14 @@ export function getTodayRange() {
   return { from: from.toJSDate(), to: to.toJSDate(), fromDT: from, toDT: to };
 }
 
+export function getYesterdayRange() {
+  const now = DateTime.now().setZone(TZ);
+  const from = now.startOf("day").minus({ days: 1 });
+  const to = from.plus({ days: 1 });
+  return { from: from.toJSDate(), to: to.toJSDate(), fromDT: from, toDT: to };
+}
+
+
 export function getThisWeekRange() {
   const now = DateTime.now().setZone(TZ).startOf("day");
   const from = now.minus({ days: now.weekday - 1 }).startOf("day");

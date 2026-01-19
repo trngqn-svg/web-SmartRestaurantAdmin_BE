@@ -52,11 +52,14 @@ export class AdminOrdersService {
 
     const match: any = { restaurantId };
 
-    if (status) match.status = status;
+    match.status = { $ne: "draft" };
+    if (status) {
+      match.$and = [{ status }, { status: { $ne: "draft" } }];
+      delete match.status;
+    }
 
     if (tableId) match.tableId = toObjectId(tableId, 'tableId');
 
-    // date preset filter: submittedAt fallback createdAt
     const { from, to } = datePresetRange(date);
     match.$expr = {
       $and: [
@@ -65,7 +68,6 @@ export class AdminOrdersService {
       ],
     };
 
-    // search
     if (q && q.trim()) {
       const s = q.trim();
       if (isObjectIdLike(s)) {
@@ -87,7 +89,7 @@ export class AdminOrdersService {
         $facet: {
           items: [
             { $skip: skip },
-            { $limit: pageSize }, // ✅ now guaranteed number
+            { $limit: pageSize },
             {
               $project: {
                 _id: 0,

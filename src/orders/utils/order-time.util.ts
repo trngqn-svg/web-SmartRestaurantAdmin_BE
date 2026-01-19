@@ -19,12 +19,11 @@ export function datePresetRange(preset: 'today' | 'yesterday' | 'this_week' | 't
 
   if (preset === 'this_week') {
     const base = now.startOf('day');
-    const from = base.minus({ days: base.weekday - 1 }).startOf('day'); // Mon
+    const from = base.minus({ days: base.weekday - 1 }).startOf('day');
     const to = from.plus({ days: 7 });
     return { from: from.toJSDate(), to: to.toJSDate() };
   }
 
-  // this_month
   const from = now.startOf('month');
   const to = from.plus({ months: 1 });
   return { from: from.toJSDate(), to: to.toJSDate() };

@@ -28,11 +28,8 @@ export class TablesService {
     if (existingTable) {
       throw new ConflictException('Table number already exists');
     }
-
-    // Create table
     const table = await new this.tableModel(createTableDto).save();
 
-    // Generate QR code
     const nextVersion = (table.qrTokenVersion ?? 0) + 1;
 
     const payload = {
@@ -198,7 +195,6 @@ export class TablesService {
       };
     }
 
-    // PDF format
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -214,14 +210,12 @@ export class TablesService {
         });
         doc.on('error', reject);
 
-        // Title
         doc
           .fontSize(28)
           .font('Helvetica-Bold')
           .text('Smart Restaurant', { align: 'center' });
         doc.moveDown(0.5);
 
-        // Table Info
         doc
           .fontSize(20)
           .font('Helvetica-Bold')
@@ -237,7 +231,6 @@ export class TablesService {
         }
         doc.moveDown(1);
 
-        // QR Code
         QRCode.toBuffer(qrUrl, {
           width: 300,
           margin: 2,

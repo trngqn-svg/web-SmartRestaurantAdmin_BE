@@ -4,11 +4,11 @@ import { Type } from 'class-transformer';
 export class AdminListOrdersQueryDto {
   @IsOptional()
   @IsString()
-  status?: string; // pending/served/...
+  status?: string;
 
   @IsOptional()
   @IsString()
-  tableId?: string; // ObjectId string
+  tableId?: string;
 
   @IsOptional()
   @IsIn(['today', 'yesterday', 'this_week', 'this_month'])

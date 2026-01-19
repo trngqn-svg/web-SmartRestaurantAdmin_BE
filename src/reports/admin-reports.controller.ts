@@ -1,4 +1,3 @@
-// src/modules/reports/admin-reports.controller.ts
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { ReportsService } from './reports.service';
@@ -30,8 +29,6 @@ export class AdminReportsController {
       range: q.range,
       anchorDate: q.anchorDate,
     });
-
-    // 1 file CSV chứa nhiều "section" (giống mình làm trước)
     const rows: Array<Record<string, any>> = [];
 
     rows.push({
