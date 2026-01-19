@@ -1,11 +1,15 @@
-// src/modules/reports/reports.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Bill, BillDocument } from '../bills/bill.schema'; // chỉnh path theo project bạn
-import { Order, OrderDocument } from '../orders/order.schema'; // chỉnh path theo project bạn
+import { Bill, BillDocument } from '../bills/bill.schema'; 
+import { Order, OrderDocument } from '../orders/order.schema';
 import { DateTime } from 'luxon';
-import { TZ, getRange, daysBetweenInclusive, isoWeeksInMonth } from './utils/report-time.util';
+import { TZ, getRange, getPrevRange, daysBetweenInclusive, isoWeeksInMonth } from './utils/report-time.util';
+
+function pctDelta(cur: number, prev: number) {
+  if (!prev || prev <= 0) return cur <= 0 ? 0 : 100;
+  return ((cur - prev) / prev) * 100;
+}
 
 @Injectable()
 export class ReportsService {
@@ -14,14 +18,18 @@ export class ReportsService {
     @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>,
   ) {}
 
-  async overview(args: { restaurantId: string; range: 'week' | 'month'; anchorDate?: string }) {
+  async overview(args: { restaurantId: string; range: "week" | "month"; anchorDate?: string }) {
     const { restaurantId, range, anchorDate } = args;
+
     const r = getRange(range, anchorDate);
+    const p = getPrevRange(range, anchorDate);
 
     const from = r.from;
     const to = r.to;
 
-    // Run aggregates in parallel
+    const prevFrom = p.from;
+    const prevTo = p.to;
+
     const [
       revenueTotal,
       revenueSeries,
@@ -29,33 +37,69 @@ export class ReportsService {
       prepAgg,
       peakHoursAgg,
       topItemsAgg,
+      prevRevenueTotal,
+      prevOrdersAgg,
+      prevTopItemsAgg,
     ] = await Promise.all([
       this.totalRevenueByBills({ restaurantId, from, to }),
-      range === 'week'
-        ? this.revenueByDayOfWeek({ restaurantId, from, to, isoStart: (r as any).isoStart, isoEndExclusive: (r as any).isoEndExclusive })
-        : this.revenueByIsoWeekInMonth({ restaurantId, from, to, monthStart: (r as any).monthStart }),
+      range === "week"
+        ? this.revenueByDayOfWeek({
+            restaurantId,
+            from,
+            to,
+            isoStart: (r as any).isoStart,
+            isoEndExclusive: (r as any).isoEndExclusive,
+          })
+        : this.revenueByIsoWeekInMonth({
+            restaurantId,
+            from,
+            to,
+            monthStart: (r as any).monthStart,
+          }),
       this.ordersAndAov({ restaurantId, from, to }),
       this.avgPrepTime({ restaurantId, from, to }),
       this.peakHours({ restaurantId, from, to }),
-      this.topItems({ restaurantId, from, to }),
+      this.topItemsRich({ restaurantId, from, to }),
+
+      this.totalRevenueByBills({ restaurantId, from: prevFrom, to: prevTo }),
+      this.ordersAndAov({ restaurantId, from: prevFrom, to: prevTo }),
+      this.topItemsRich({ restaurantId, from: prevFrom, to: prevTo }),
     ]);
 
     const totals = {
       revenueCents: revenueTotal,
+      revenueDeltaPct: Math.round(pctDelta(revenueTotal, prevRevenueTotal)),
+
       ordersServed: ordersAgg.ordersServed,
+      ordersDeltaPct: Math.round(pctDelta(ordersAgg.ordersServed, prevOrdersAgg.ordersServed)),
+
       avgOrderValueCents: ordersAgg.avgOrderValueCents,
-      avgPrepTimeSeconds: prepAgg.avgPrepTimeSeconds,
+      aovDeltaPct: Math.round(pctDelta(ordersAgg.avgOrderValueCents, prevOrdersAgg.avgOrderValueCents)),
+
+      avgPrepTimeSeconds: prepAgg.avgPrepTimeSeconds ?? 0,
       avgPrepSampleSize: prepAgg.sampleSize,
     };
+
+    const prevMap = new Map<string, any>();
+    for (const x of prevTopItemsAgg) prevMap.set(x.itemId, x);
+
+    const topItems = topItemsAgg.map((cur: any) => {
+      const prev = prevMap.get(cur.itemId);
+      const prevRevenue = prev?.revenueCents ?? 0;
+      const trendPct = Math.round(pctDelta(cur.revenueCents ?? 0, prevRevenue));
+      return { ...cur, trendPct };
+    });
 
     return {
       range,
       from,
       to,
+      prevFrom,
+      prevTo,
       totals,
       revenueSeries,
       peakHours: peakHoursAgg,
-      topItems: topItemsAgg,
+      topItems,
     };
   }
 
@@ -74,7 +118,6 @@ export class ReportsService {
     return res?.[0]?.revenueCents ?? 0;
   }
 
-  // WEEK: group by date (YYYY-MM-DD) within week (Mon..Sun)
   private async revenueByDayOfWeek(args: {
     restaurantId: string;
     from: Date;
@@ -108,7 +151,6 @@ export class ReportsService {
       { $sort: { _id: 1 } },
     ]);
 
-    // fill missing days (7)
     const keys = daysBetweenInclusive(isoStart, isoEndExclusive);
     const map = new Map<string, number>();
     raw.forEach((x: any) => map.set(x._id, x.revenueCents));
@@ -116,7 +158,6 @@ export class ReportsService {
     return keys.map((k) => ({ key: k, revenueCents: map.get(k) ?? 0 }));
   }
 
-  // MONTH: group by ISO week buckets that intersect month
   private async revenueByIsoWeekInMonth(args: {
     restaurantId: string;
     from: Date;
@@ -153,7 +194,6 @@ export class ReportsService {
     const map = new Map<string, number>();
     raw.forEach((x: any) => map.set(`${x._id.year}-W${x._id.week}`, x.revenueCents));
 
-    // Return as "YYYY-W##" keys (FE có thể label "Week 1..n" nếu muốn)
     return weeks.map((w) => {
       const key = `${w.year}-W${w.week}`;
       return { key, revenueCents: map.get(key) ?? 0 };
@@ -200,10 +240,6 @@ export class ReportsService {
 
   private async avgPrepTime(args: { restaurantId: string; from: Date; to: Date }) {
     const { restaurantId, from, to } = args;
-
-    // prep(order) = max(readyAt-startedAt per line) OR if you want full span:
-    // max(readyAt) - min(startedAt)
-    // Bạn chọn Option 1; mình dùng "full span" (max ready - min started) chuẩn hơn.
     const res = await this.orderModel.aggregate([
       {
         $match: {
@@ -292,7 +328,6 @@ export class ReportsService {
       { $sort: { _id: 1 } },
     ]);
 
-    // fill 0..23
     const map = new Map<number, number>();
     raw.forEach((x: any) => map.set(x._id, x.orders));
     const out: Array<{ hour: number; orders: number }> = [];
@@ -300,38 +335,51 @@ export class ReportsService {
     return out;
   }
 
-  private async topItems(args: { restaurantId: string; from: Date; to: Date }) {
-    const { restaurantId, from, to } = args;
+  private async topItemsRich(args: { restaurantId: string; from: Date; to: Date }) {
+  const { restaurantId, from, to } = args;
 
-    const raw = await this.orderModel.aggregate([
-      {
-        $match: {
-          restaurantId,
-          status: 'served',
-          submittedAt: { $gte: from, $lt: to },
-        },
+  const raw = await this.orderModel.aggregate([
+    {
+      $match: {
+        restaurantId,
+        status: "served",
+        submittedAt: { $gte: from, $lt: to },
       },
-      { $unwind: '$items' },
-      { $match: { 'items.status': { $ne: 'cancelled' } } },
-      {
-        $group: {
-          _id: '$items.itemId',
-          name: { $first: '$items.nameSnapshot' },
-          totalQty: { $sum: '$items.qty' },
-        },
-      },
-      { $sort: { totalQty: -1 } },
-      { $limit: 5 },
-      {
-        $project: {
-          _id: 0,
-          itemId: { $toString: '$_id' },
-          name: 1,
-          totalQty: 1,
-        },
-      },
-    ]);
+    },
+    { $unwind: "$items" },
+    { $match: { "items.status": { $ne: "cancelled" } } },
 
-    return raw;
-  }
+    {
+      $addFields: {
+        __qty: { $ifNull: ["$items.qty", 1] },
+        __lineTotal: { $ifNull: ["$items.lineTotalCents", 0] },
+      },
+    },
+
+    {
+      $group: {
+        _id: "$items.itemId",
+        name: { $first: "$items.nameSnapshot" },
+        totalQty: { $sum: "$__qty" },
+        revenueCents: { $sum: "$__lineTotal" },
+      },
+    },
+
+    { $sort: { revenueCents: -1, totalQty: -1 } },
+    { $limit: 5 },
+
+    {
+      $project: {
+        _id: 0,
+        itemId: { $toString: "$_id" },
+        name: 1,
+        totalQty: 1,
+        revenueCents: 1,
+      },
+    },
+  ]);
+
+  return raw as Array<{ itemId: string; name: string; totalQty: number; revenueCents: number }>;
+}
+
 }

@@ -1,4 +1,3 @@
-// src/modules/reports/utils/pdf.util.ts
 import PDFDocument from 'pdfkit';
 
 export async function buildReportPdf(args: {

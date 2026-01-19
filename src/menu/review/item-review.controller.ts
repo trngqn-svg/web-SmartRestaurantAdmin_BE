@@ -11,19 +11,16 @@ import { Roles } from '../../common/decorators/roles.decorator';
 export class ItemReviewsController {
   constructor(private readonly service: ItemReviewsService) {}
 
-  // CUSTOMER: create review
   @Post('/customer/item-reviews')
   async create(@Body() dto: CreateItemReviewDto) {
     return this.service.create(dto /*, userId*/);
   }
 
-  // CUSTOMER: list reviews by item
   @Get('/customer/menu/:id/reviews')
   async listByItem(@Param('id') itemId: string, @Query() q: ListItemReviewsQuery) {
     return this.service.listByItem(itemId, q);
   }
 
-  // CUSTOMER: delete own review (soft delete)
   @Delete('/customer/item-reviews/:reviewId')
   async remove(@Param('reviewId') reviewId: string) {
     return this.service.remove(reviewId /*, userId*/);

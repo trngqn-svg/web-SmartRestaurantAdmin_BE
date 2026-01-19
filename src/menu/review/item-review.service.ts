@@ -24,7 +24,6 @@ export class ItemReviewsService {
   async create(dto: CreateItemReviewDto, userId?: string) {
     const itemId = new Types.ObjectId(dto.itemId);
 
-    // check item exists + belongs restaurant + not deleted
     const item = await this.itemModel.findOne({
       _id: itemId,
       restaurantId: RESTAURANT_ID,
@@ -33,7 +32,6 @@ export class ItemReviewsService {
 
     if (!item) throw new NotFoundException('Item not found');
 
-    // optional: prevent duplicate review per user per item
     if (userId) {
       const existed = await this.reviewModel.findOne({
         restaurantId: RESTAURANT_ID,
@@ -142,10 +140,7 @@ export class ItemReviewsService {
     return { ok: true };
   }
 
-  // ---------- helpers ----------
   private async applyDeltaToItemRating(itemId: Types.ObjectId, deltaCount: 1 | -1, rating: number) {
-    // lấy ratingCount/ratingAvg hiện tại, rồi tính avg mới.
-    // NOTE: để tránh race condition, bạn có thể dùng transaction hoặc dùng aggregation recompute.
     const item = await this.itemModel.findOne(
       { _id: itemId, restaurantId: RESTAURANT_ID, isDeleted: false },
       { ratingAvg: 1, ratingCount: 1, ratingBreakdown: 1 },
@@ -175,7 +170,6 @@ export class ItemReviewsService {
     await item.save();
   }
 
-  // dùng khi muốn “recompute chuẩn tuyệt đối”
   async recalculateItemRating(itemId: string) {
     const _itemId = new Types.ObjectId(itemId);
 
