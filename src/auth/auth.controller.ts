@@ -2,7 +2,7 @@ import { Controller, Post, Body, Req, Res } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-// import { RegisterDto } from './dto/register.dto';
+import { RegisterDto } from './dto/register.dto';
 import { UnauthorizedException } from '@nestjs/common';
 
 @Controller('api/admin/auth')
@@ -54,24 +54,24 @@ export class AuthController {
     };
   }
 
-  // @Post('register')
-  // async register(
-  //   @Body() dto: RegisterDto,
-  //   @Res({ passthrough: true }) res: Response,
-  // ) {
-  //   const { accessToken, refreshToken } = await this.authService.register(
-  //     dto.username,
-  //     dto.password,
-  //   );
+  @Post('register')
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken } = await this.authService.register(
+      dto.username,
+      dto.password,
+    );
 
-  //   res.cookie('refreshToken', refreshToken, {
-  //     httpOnly: true,
-  //     secure: process.env.NODE_ENV === 'production',
-  //     sameSite: 'strict',
-  //     path: '/api/admin/auth/refresh',
-  //     maxAge: 7 * 24 * 60 * 60 * 1000,
-  //   });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/admin/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-  //   return { accessToken };
-  // }
+    return { accessToken };
+  }
 }
