@@ -12,37 +12,37 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  // async register(username: string, password: string) {
-  //   const exists = await this.accountsService.findByUsername(username);
-  //   if (exists) throw new BadRequestException('Username already exists');
+  async register(username: string, password: string) {
+    const exists = await this.accountsService.findByUsername(username);
+    if (exists) throw new BadRequestException('Username already exists');
     
-  //   const admin = await this.accountsService.create({
-  //     username,
-  //     password,
-  //     role: 'SUPER_ADMIN',
-  //   });
+    const admin = await this.accountsService.create({
+      username,
+      password,
+      role: 'SUPER_ADMIN',
+    });
 
-  //   const payload = {
-  //     sub: (admin as any)._id?.toString?.() ?? (admin as any).id,
-  //     username: admin.username,
-  //     role: (admin as any).role,
-  //   };
+    const payload = {
+      sub: (admin as any)._id?.toString?.() ?? (admin as any).id,
+      username: admin.username,
+      role: (admin as any).role,
+    };
 
-  //   const accessToken = this.jwtService.sign(payload, {
-  //     secret: this.configService.get('JWT_ACCESS_SECRET'),
-  //     expiresIn: this.configService.get('ACCESS_TOKEN_EXPIRE'),
-  //   });
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_ACCESS_SECRET'),
+      expiresIn: this.configService.get('ACCESS_TOKEN_EXPIRE'),
+    });
 
-  //   const refreshToken = this.jwtService.sign(
-  //     { sub: payload.sub },
-  //     {
-  //       secret: this.configService.get('JWT_REFRESH_SECRET'),
-  //       expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRE'),
-  //     },
-  //   );
+    const refreshToken = this.jwtService.sign(
+      { sub: payload.sub },
+      {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRE'),
+      },
+    );
 
-  //   return { accessToken, refreshToken };
-  // }
+    return { accessToken, refreshToken };
+  }
 
   async login(username: string, password: string) {
     const acc = await this.accountsService.findByUsername(username);
