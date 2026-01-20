@@ -21,7 +21,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
+@Roles('ADMIN', 'SUPER_ADMIN')
 @Controller('api/admin/tables')
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
