@@ -18,6 +18,15 @@ export class Account {
 
   @Prop({ type: String, enum: STATUSES, default: 'ACTIVE' })
   status: AccountStatus;
+
+  @Prop({ trim: true, default: '' })
+  fullName: string;
+
+  @Prop({ trim: true, default: '' })
+  address: string;
+
+  @Prop({ trim: true, default: '' })
+  phoneNumber: string;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);
