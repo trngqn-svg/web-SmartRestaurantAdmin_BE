@@ -60,6 +60,9 @@ export class AccountsService {
       password: hashedPassword,
       role: dto.role,
       status: 'ACTIVE',
+      fullName: dto.username,
+      address: '',
+      phoneNumber: '',
     });
 
     const obj = doc.toObject();
