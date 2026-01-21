@@ -8,7 +8,10 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
-    origin: process.env.VITE_ADMIN_APP_URL,
+    origin: [
+      process.env.VITE_ADMIN_APP_URL!,
+      process.env.VITE_APP_URL!
+    ],
     credentials: true,
   });
 
