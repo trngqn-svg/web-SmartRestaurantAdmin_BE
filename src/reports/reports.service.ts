@@ -109,8 +109,8 @@ export class ReportsService {
       {
         $match: {
           restaurantId,
-          status: 'PAID',
-          paidAt: { $gte: from, $lt: to },
+          status: 'CANCELLED',
+          cancelledAt: { $gte: from, $lt: to },
         },
       },
       { $group: { _id: null, revenueCents: { $sum: '$totalCents' } } },
@@ -131,8 +131,8 @@ export class ReportsService {
       {
         $match: {
           restaurantId,
-          status: 'PAID',
-          paidAt: { $gte: from, $lt: to },
+          status: 'CANCELLED',
+          cancelledAt: { $gte: from, $lt: to },
         },
       },
       {
@@ -140,7 +140,7 @@ export class ReportsService {
           amount: '$totalCents',
           day: {
             $dateToString: {
-              date: '$paidAt',
+              date: '$cancelledAt',
               format: '%Y-%m-%d',
               timezone: TZ,
             },
@@ -170,15 +170,15 @@ export class ReportsService {
       {
         $match: {
           restaurantId,
-          status: 'PAID',
-          paidAt: { $gte: from, $lt: to },
+          status: 'CANCELLED',
+          cancelledAt: { $gte: from, $lt: to },
         },
       },
       {
         $project: {
           amount: '$totalCents',
-          isoYear: { $isoWeekYear: '$paidAt' },
-          isoWeek: { $isoWeek: '$paidAt' },
+          isoYear: { $isoWeekYear: '$cancelledAt' },
+          isoWeek: { $isoWeek: '$cancelledAt' },
         },
       },
       {

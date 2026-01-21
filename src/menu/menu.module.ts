@@ -26,6 +26,8 @@ import { GuestMenuService } from './public/guest.service';
 import { ItemReviewsService } from './review/item-review.service';
 import { ItemReviewsController } from './review/item-review.controller';
 
+import { User, UserSchema } from '../users/user.schema';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -35,6 +37,7 @@ import { ItemReviewsController } from './review/item-review.controller';
       { name: ModifierGroup.name, schema: ModifierGroupSchema },
       { name: ModifierOption.name, schema: ModifierOptionSchema },
       { name: ItemReview.name, schema: ItemReviewSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [
