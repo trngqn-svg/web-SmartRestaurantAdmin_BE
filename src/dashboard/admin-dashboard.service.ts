@@ -78,7 +78,7 @@ export class AdminDashboardService {
   private async sumRevenuePaidBills(args: { restaurantId: string; from: Date; to: Date }) {
     const { restaurantId, from, to } = args;
     const res = await this.billModel.aggregate([
-      { $match: { restaurantId, status: "PAID", paidAt: { $gte: from, $lt: to } } },
+      { $match: { restaurantId, status: "CANCELLED", cancelledAt: { $gte: from, $lt: to } } },
       { $group: { _id: null, revenueCents: { $sum: "$totalCents" } } },
     ]);
     return res?.[0]?.revenueCents ?? 0;
@@ -249,13 +249,13 @@ export class AdminDashboardService {
     const { restaurantId, from, to, fromDT, toDT } = args;
 
     const raw = await this.billModel.aggregate([
-      { $match: { restaurantId, status: "PAID", paidAt: { $gte: from, $lt: to } } },
+      { $match: { restaurantId, status: "CANCELLED", cancelledAt: { $gte: from, $lt: to } } },
       {
         $project: {
           amount: "$totalCents",
           day: {
             $dateToString: {
-              date: "$paidAt",
+              date: "$cancelledAt",
               format: "%Y-%m-%d",
               timezone: TZ,
             },
